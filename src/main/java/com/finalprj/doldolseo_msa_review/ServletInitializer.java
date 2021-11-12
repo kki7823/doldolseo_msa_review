@@ -1,5 +1,6 @@
-package com.doldolseo.doldolseo_msa_review;
+package com.finalprj.doldolseo_msa_review;
 
+import com.finalprj.doldolseo_msa_review.DoldolseoMsaReviewApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
