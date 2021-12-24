@@ -1,4 +1,4 @@
-package com.doldolseo.doldolseo_msa_review;
+package com.finalprj.doldolseo_msa_review;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
