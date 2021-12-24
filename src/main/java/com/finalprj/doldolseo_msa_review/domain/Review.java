@@ -27,16 +27,10 @@ public class Review {
     private Long reviewNo;
 
     @Column(name = "ID")
-    private String memberId;
+    private String id;
 
     private String title;
     private String content;
-
-    @Column(name = "COURSE_IMG")
-    private String courseImgName;
-
-    @Column(name = "UPLOAD_IMG")
-    private String uploadImgNames;
 
     @Column(name = "W_DATE")
     private LocalDateTime wDate;
@@ -45,4 +39,9 @@ public class Review {
 
     @Column(name = "AREA_NO")
     private int areaNo;
+
+    @Column(name = "IMAGE_UUID")
+    private String imageUUID;
+
+    private char isCourseUploaded;
 }

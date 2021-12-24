@@ -1,11 +1,10 @@
-package com.finalprj.doldolseo_msa_review.service.impl;
+package com.finalprj.doldolseo_msa_review.service;
 
 import com.finalprj.doldolseo_msa_review.domain.Review;
 import com.finalprj.doldolseo_msa_review.domain.ReviewComment;
 import com.finalprj.doldolseo_msa_review.dto.ReviewCommentDTO;
 import com.finalprj.doldolseo_msa_review.repository.ReviewCommentRepository;
 import com.finalprj.doldolseo_msa_review.repository.ReviewRepository;
-import com.finalprj.doldolseo_msa_review.service.ReviewCommentService;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,17 +24,17 @@ public class ReviewCommentServiceImpl implements ReviewCommentService {
     ModelMapper modelMapper;
 
     @Override
-    public List<ReviewCommentDTO> getCommentList(Long reviewNo) {
+    public List<ReviewCommentDTO> getComments(Long reviewNo) {
         List<ReviewComment> commentEntity = reviewCommentRepository.findAllByReview_ReviewNo(reviewNo);
         return entityListToDtoList(commentEntity);
     }
 
     @Override
-    public void insertComment(ReviewCommentDTO dto) {
+    public ReviewCommentDTO insertComment(ReviewCommentDTO dto) {
         setWDate(dto);
         setReview(dto);
-        ReviewComment comment = dtoToEntity(dto);
-        reviewCommentRepository.save(comment);
+        ReviewComment comment = reviewCommentRepository.save(dtoToEntity(dto));
+        return entityToDto(comment);
     }
 
     public void setWDate(ReviewCommentDTO dto) {
@@ -49,8 +48,8 @@ public class ReviewCommentServiceImpl implements ReviewCommentService {
 
     @Override
     @Transactional
-    public void updateComment(ReviewCommentDTO dto) {
-        ReviewComment comment = reviewCommentRepository.findByCommentNo(dto.getCommentNo());
+    public void updateComment(Long commentNo, ReviewCommentDTO dto) {
+        ReviewComment comment = reviewCommentRepository.findByCommentNo(commentNo);
         comment.setWDate(LocalDateTime.now());
         comment.setContent(dto.getContent());
     }
