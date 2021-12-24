@@ -1,0 +1,115 @@
+package com.finalprj.doldolseo_msa_review.controller;
+
+import com.finalprj.doldolseo_msa_review.dto.ReviewDTO;
+import com.finalprj.doldolseo_msa_review.dto.ReviewPageDTO;
+import com.finalprj.doldolseo_msa_review.service.ReviewServiceImpl;
+import com.finalprj.doldolseo_msa_review.util.PagingParam;
+import com.finalprj.doldolseo_msa_review.util.UploadReviewFileUtil;
+import org.apache.commons.io.IOUtils;
+import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+/*
+ * 후기게시판 Controller
+ *
+ * @Author 김경일
+ * @Date 2021/08/06
+ */
+
+@RestController
+public class ReviewController {
+    @Autowired
+    private ReviewServiceImpl reviewService;
+    @Autowired
+    UploadReviewFileUtil fileUtil;
+
+    @GetMapping("/review")
+    public ResponseEntity<ReviewPageDTO> getReviewList(@RequestParam(name = "areaNo", required = false) Integer areaNo,
+                                                       @PageableDefault(size = 30, sort = "wDate", direction = Sort.Direction.DESC) Pageable pageable) throws Exception {
+        Page<ReviewDTO> reviewPage = reviewService.getReviewPage(areaNo, pageable);
+
+        PagingParam pagingParam = new PagingParam(5, reviewPage);
+
+        ReviewPageDTO reviewPageDTO = new ReviewPageDTO();
+        reviewPageDTO.setReviewList(reviewPage.getContent());
+        reviewPageDTO.setEndBlockPage(pagingParam.getStartBlockPage());
+        reviewPageDTO.setEndBlockPage(pagingParam.getEndBlockPage());
+        reviewPageDTO.setTotalPages(pagingParam.getTotalPages());
+
+        return ResponseEntity.status(HttpStatus.OK).body(reviewPageDTO);
+    }
+
+    @GetMapping("/review/{reviewNo}")
+    public ResponseEntity<ReviewDTO> getReview(@PathVariable Long reviewNo,
+                                               @RequestParam String mode) throws Exception {
+        ReviewDTO reviewDTO;
+        if (mode.equals("write"))
+            reviewDTO = reviewService.getReviewAndHit(reviewNo);
+        else
+            reviewDTO = reviewService.getReview(reviewNo);
+
+        return ResponseEntity.status(HttpStatus.OK).body(reviewDTO);
+    }
+
+    @PostMapping(value = "/review")
+    @ResponseBody
+    public ResponseEntity<Long> insertReview(ReviewDTO dto) {
+        reviewService.insertReview(dto);
+        return ResponseEntity.status(HttpStatus.OK).body(dto.getReviewNo());
+    }
+
+    @PutMapping(value = "/review/{reviewNo}")
+    public ResponseEntity<String> updateReview(@PathVariable("reviewNo") Long reviewNo,
+                                               ReviewDTO dto) {
+        reviewService.updateReview(reviewNo, dto);
+        return ResponseEntity.status(HttpStatus.OK).body("수정 완료");
+    }
+
+//    @DeleteMapping(value = "/review/{reviewNo}")
+//    public String deleteReview(@PathVariable("reviewNo") Long reviewNo) {
+//        reviewService.deleteReview(reviewNo);
+//        fileUtil.deleteReviewImgs(reviewNo);
+//        return "redirect:/review";
+//    }
+//
+
+    @PostMapping(value = "/review/images/{imageUUID}")
+    public ResponseEntity<String> insertReviewImage(@PathVariable("imageUUID") String uuid,
+                                                    @RequestParam MultipartFile imgFile) throws IOException, FileSizeLimitExceededException {
+        return ResponseEntity.status(HttpStatus.OK).body(fileUtil.saveReviewImg(uuid, imgFile));
+    }
+
+    @ResponseBody
+    @GetMapping(value = "/review/images/{imageUUID}/{imageFileName}",
+            produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_GIF_VALUE})
+    public byte[] getReviewImage(@PathVariable("imageUUID") String uuid,
+                                 @PathVariable("imageFileName") String imageFileName,
+                                 HttpServletRequest request) throws IOException {
+
+        String imgPath = System.getProperty("user.dir") + "/src/main/resources/static/review_image/" + uuid + "/" + imageFileName;
+        InputStream in = new FileInputStream(imgPath);
+        byte[] imageByteArr = IOUtils.toByteArray(in);
+        in.close();
+        return imageByteArr;
+    }
+
+    @PostMapping(value = "/review/course/{imageUUID}")
+    public ResponseEntity<String> insertReviewCourse(@PathVariable("imageUUID") String imageUUID,
+                                                     @RequestParam MultipartFile courseImgFile) throws IOException, FileSizeLimitExceededException {
+        return ResponseEntity.status(HttpStatus.OK).body(fileUtil.saveCourseImg(imageUUID, courseImgFile));
+    }
+}
