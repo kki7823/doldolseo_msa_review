@@ -21,7 +21,6 @@ public class ReviewCommentController {
     @PostMapping("/review/{reviewNo}/comment")
     public ResponseEntity<String> insertReviewComment(@PathVariable("reviewNo") Long reviewNo,
                                                       @RequestBody ReviewCommentDTO dto) {
-        System.out.println("디디디디디디디티티티티티오오오:    " + dto.toString());
         service.insertComment(dto);
         return ResponseEntity.ok("댓글 삽입 완료");
     }

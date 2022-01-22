@@ -72,6 +72,12 @@ public class ReviewController {
         return ResponseEntity.status(HttpStatus.OK).body(dto.getReviewNo());
     }
 
+    @PostMapping(value = "/review/images/{imageUUID}")
+    public ResponseEntity<String> insertReviewImage(@PathVariable("imageUUID") String uuid,
+                                                    @RequestParam MultipartFile imgFile) throws IOException, FileSizeLimitExceededException {
+        return ResponseEntity.status(HttpStatus.OK).body(fileUtil.saveReviewImg(uuid, imgFile));
+    }
+
     @PutMapping(value = "/review/{reviewNo}")
     public ResponseEntity<String> updateReview(@PathVariable("reviewNo") Long reviewNo,
                                                ReviewDTO dto) {
@@ -86,12 +92,6 @@ public class ReviewController {
 //        return "redirect:/review";
 //    }
 //
-
-    @PostMapping(value = "/review/images/{imageUUID}")
-    public ResponseEntity<String> insertReviewImage(@PathVariable("imageUUID") String uuid,
-                                                    @RequestParam MultipartFile imgFile) throws IOException, FileSizeLimitExceededException {
-        return ResponseEntity.status(HttpStatus.OK).body(fileUtil.saveReviewImg(uuid, imgFile));
-    }
 
     @ResponseBody
     @GetMapping(value = "/review/images/{imageUUID}/{imageFileName}",
