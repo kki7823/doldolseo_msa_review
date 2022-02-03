@@ -6,7 +6,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "REVIEW_BOARD_COMMENT_TBL")
+@Table(name = "REVIEW_COMMENT_TBL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter

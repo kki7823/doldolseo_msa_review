@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  */
 
 @Entity
-@Table(name = "REVIEW_BOARD_TBL")
+@Table(name = "REVIEW_TBL")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter
