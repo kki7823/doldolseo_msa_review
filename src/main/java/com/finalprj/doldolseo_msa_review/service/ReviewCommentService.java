@@ -1,15 +1,16 @@
 package com.finalprj.doldolseo_msa_review.service;
 
 import com.finalprj.doldolseo_msa_review.dto.ReviewCommentDTO;
+import com.finalprj.doldolseo_msa_review.dto.ReviewCommentsDTO;
 
 import java.util.List;
 
 public interface ReviewCommentService {
-    List<ReviewCommentDTO> getComments(Long reviewNo);
+    ReviewCommentsDTO getComments(Long reviewNo);
 
     ReviewCommentDTO insertComment(ReviewCommentDTO dto);
 
-    void updateComment(Long commentNo, ReviewCommentDTO dto);
+    boolean updateComment(Long commentNo, ReviewCommentDTO dto, String idTryToUpdate);
 
-    void deleteComment(Long commentNo);
+    boolean deleteComment(Long commentNo, String idTryToDelete);
 }

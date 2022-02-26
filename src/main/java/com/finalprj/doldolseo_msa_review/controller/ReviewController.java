@@ -15,6 +15,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -80,26 +81,28 @@ public class ReviewController {
 
     @PutMapping(value = "/review/{reviewNo}")
     public ResponseEntity<String> updateReview(@PathVariable("reviewNo") Long reviewNo,
-                                               ReviewDTO dto) {
-        reviewService.updateReview(reviewNo, dto);
-        return ResponseEntity.status(HttpStatus.OK).body("수정 완료");
+                                               ReviewDTO dto,
+                                               @RequestHeader String userId) {
+        if (reviewService.updateReview(reviewNo, dto, userId))
+            return ResponseEntity.status(HttpStatus.OK).body(reviewNo + "번 게시글 수정 완료");
+        else
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(reviewNo + "번 게시글 수정 실패");
     }
 
-//    @DeleteMapping(value = "/review/{reviewNo}")
-//    public String deleteReview(@PathVariable("reviewNo") Long reviewNo) {
-//        reviewService.deleteReview(reviewNo);
-//        fileUtil.deleteReviewImgs(reviewNo);
-//        return "redirect:/review";
-//    }
-//
+    @DeleteMapping(value = "/review/{reviewNo}")
+    public ResponseEntity<String> deleteReview(@PathVariable("reviewNo") Long reviewNo,
+                                               @RequestHeader String userId) {
+        if (reviewService.deleteReview(reviewNo, userId))
+            return ResponseEntity.status(HttpStatus.OK).body(reviewNo + "번 게시글 삭제");
+        else
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(reviewNo + "번 게시글 삭제 실패");
+    }
 
     @ResponseBody
     @GetMapping(value = "/review/images/{imageUUID}/{imageFileName}",
             produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_GIF_VALUE})
     public byte[] getReviewImage(@PathVariable("imageUUID") String uuid,
-                                 @PathVariable("imageFileName") String imageFileName,
-                                 HttpServletRequest request) throws IOException {
-
+                                 @PathVariable("imageFileName") String imageFileName) throws IOException {
         String imgPath = System.getProperty("user.dir") + "/src/main/resources/static/review_image/" + uuid + "/" + imageFileName;
         InputStream in = new FileInputStream(imgPath);
         byte[] imageByteArr = IOUtils.toByteArray(in);

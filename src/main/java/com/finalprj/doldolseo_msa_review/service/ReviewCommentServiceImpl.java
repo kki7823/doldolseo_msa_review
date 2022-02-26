@@ -3,6 +3,7 @@ package com.finalprj.doldolseo_msa_review.service;
 import com.finalprj.doldolseo_msa_review.domain.Review;
 import com.finalprj.doldolseo_msa_review.domain.ReviewComment;
 import com.finalprj.doldolseo_msa_review.dto.ReviewCommentDTO;
+import com.finalprj.doldolseo_msa_review.dto.ReviewCommentsDTO;
 import com.finalprj.doldolseo_msa_review.repository.ReviewCommentRepository;
 import com.finalprj.doldolseo_msa_review.repository.ReviewRepository;
 import org.modelmapper.ModelMapper;
@@ -10,7 +11,6 @@ import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,12 +22,6 @@ public class ReviewCommentServiceImpl implements ReviewCommentService {
     ReviewRepository reviewRepository;
     @Autowired
     ModelMapper modelMapper;
-
-    @Override
-    public List<ReviewCommentDTO> getComments(Long reviewNo) {
-        List<ReviewComment> commentEntity = reviewCommentRepository.findAllByReview_ReviewNo(reviewNo);
-        return entityListToDtoList(commentEntity);
-    }
 
     @Override
     public ReviewCommentDTO insertComment(ReviewCommentDTO dto) {
@@ -47,16 +41,45 @@ public class ReviewCommentServiceImpl implements ReviewCommentService {
     }
 
     @Override
-    @Transactional
-    public void updateComment(Long commentNo, ReviewCommentDTO dto) {
-        ReviewComment comment = reviewCommentRepository.findByCommentNo(commentNo);
-        comment.setWDate(LocalDateTime.now());
-        comment.setContent(dto.getContent());
+    public ReviewCommentsDTO getComments(Long reviewNo) {
+        ReviewCommentsDTO commentsDTO = new ReviewCommentsDTO();
+
+        List<ReviewComment> commentEntity = reviewCommentRepository.findAllByReview_ReviewNo(reviewNo);
+        commentsDTO.setComments(entityListToDtoList(commentEntity));
+
+        Long numOfCommnets = reviewCommentRepository.countReviewCommentsByReview_ReviewNo(reviewNo);
+        commentsDTO.setNumOfComments(numOfCommnets);
+
+        return commentsDTO;
     }
 
     @Override
-    public void deleteComment(Long commentNo) {
+    @Transactional
+    public boolean updateComment(Long commentNo, ReviewCommentDTO dto, String idTryToUpdate) {
+        String writerId = reviewCommentRepository.findByCommentNo(commentNo).getId();
+
+        if (!writerId.equals(idTryToUpdate)) {
+            System.out.println("[Update Fail] Has no Authority ");
+            return false;
+        }
+
+        ReviewComment comment = reviewCommentRepository.findByCommentNo(commentNo);
+        comment.setWDate(LocalDateTime.now());
+        comment.setContent(dto.getContent());
+        return true;
+    }
+
+    @Override
+    public boolean deleteComment(Long commentNo, String idTryToDelete) {
+        String writerId = reviewCommentRepository.findByCommentNo(commentNo).getId();
+
+        if (!writerId.equals(idTryToDelete)) {
+            System.out.println("[Delete Fail] Has no Authority ");
+            return false;
+        }
+
         reviewCommentRepository.deleteById(commentNo);
+        return true;
     }
 
     public ReviewComment dtoToEntity(ReviewCommentDTO dto) {

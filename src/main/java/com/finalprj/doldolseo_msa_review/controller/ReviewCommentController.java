@@ -1,11 +1,12 @@
 package com.finalprj.doldolseo_msa_review.controller;
 
 import com.finalprj.doldolseo_msa_review.dto.ReviewCommentDTO;
+import com.finalprj.doldolseo_msa_review.dto.ReviewCommentsDTO;
 import com.finalprj.doldolseo_msa_review.service.ReviewCommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -14,7 +15,7 @@ public class ReviewCommentController {
     ReviewCommentService service;
 
     @GetMapping(value = "/review/{reviewNo}/comment")
-    public ResponseEntity<List<ReviewCommentDTO>> getReviewComment(@PathVariable("reviewNo") Long reviewNo) {
+    public ResponseEntity<ReviewCommentsDTO> getReviewComment(@PathVariable("reviewNo") Long reviewNo) {
         return ResponseEntity.ok(service.getComments(reviewNo));
     }
 
@@ -26,18 +27,24 @@ public class ReviewCommentController {
     }
 
     @DeleteMapping("/review/{reviewNo}/comment/{commentNo}")
-    public void deleteReviewComment(@PathVariable("reviewNo") Long reviewNo,
-                                    @PathVariable("commentNo") Long commentNo) {
-        service.deleteComment(commentNo);
-        System.out.println(commentNo + "댓글 삭제 완료");
+    public ResponseEntity<String> deleteReviewComment(@PathVariable("reviewNo") Long reviewNo,
+                                                      @PathVariable("commentNo") Long commentNo,
+                                                      @RequestHeader String userId) {
+
+        if (service.deleteComment(commentNo, userId))
+            return ResponseEntity.ok("삭제 완료");
+        else
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("삭제 실패 : 권한 없음");
     }
 
     @PutMapping("/review/{reviewNo}/comment/{commentNo}")
-    public void putReviewComment(@PathVariable("reviewNo") Long reviewNo,
-                                 @PathVariable("commentNo") Long commentNo,
-                                 @RequestBody ReviewCommentDTO dto) {
-
-        service.updateComment(commentNo, dto);
-        System.out.println(commentNo + "번 댓글 수정 완료");
+    public ResponseEntity<String> putReviewComment(@PathVariable("reviewNo") Long reviewNo,
+                                                   @PathVariable("commentNo") Long commentNo,
+                                                   @RequestBody ReviewCommentDTO dto,
+                                                   @RequestHeader String userId) {
+        if (service.updateComment(commentNo, dto, userId))
+            return ResponseEntity.ok("등록 완료");
+        else
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("등록 실패 : 권한 없음");
     }
 }

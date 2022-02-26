@@ -12,13 +12,13 @@ import org.springframework.data.domain.Pageable;
  */
 
 public interface ReviewService {
-    Page<ReviewDTO> getReviewPage(Integer areaNo,Pageable pageable);
+    Page<ReviewDTO> getReviewPage(Integer areaNo, Pageable pageable);
 
     ReviewDTO getReview(Long reviewNo);
 
     ReviewDTO insertReview(ReviewDTO dto);
 
-    void updateReview(Long reviewNo, ReviewDTO dto);
+    boolean updateReview(Long reviewNo, ReviewDTO dto, String idTryToUpdate);
 
-    void deleteReview(Long reviewNo);
+    boolean deleteReview(Long reviewNo, String idTryDelete);
 }

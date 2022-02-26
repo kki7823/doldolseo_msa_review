@@ -3,6 +3,7 @@ package com.finalprj.doldolseo_msa_review.service;
 import com.finalprj.doldolseo_msa_review.domain.Review;
 import com.finalprj.doldolseo_msa_review.dto.ReviewDTO;
 import com.finalprj.doldolseo_msa_review.repository.ReviewRepository;
+import com.finalprj.doldolseo_msa_review.util.UploadReviewFileUtil;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,8 @@ public class ReviewServiceImpl implements ReviewService {
     ReviewRepository repository;
     @Autowired
     ModelMapper modelMapper;
+    @Autowired
+    UploadReviewFileUtil fileUtil;
 
     @Override
     public Page<ReviewDTO> getReviewPage(Integer areaNo, Pageable pageable) {
@@ -46,6 +49,7 @@ public class ReviewServiceImpl implements ReviewService {
         increaseHit(review);
         return entityToDto(review);
     }
+
     @Transactional
     public void increaseHit(Review review) {
         review.setHit(review.getHit() + 1);
@@ -65,17 +69,33 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public void updateReview(Long reviewNo, ReviewDTO dto) {
+    public boolean updateReview(Long reviewNo, ReviewDTO dto, String idTryToUpdate) {
+        String writerId = getReview(reviewNo).getId();
+        if(!writerId.equals(idTryToUpdate)) {
+            System.out.println("[Update Fail] Has no Authority ");
+            return false;
+        }
+
         Review review = repository.findByReviewNo(reviewNo);
         review.setTitle(dto.getTitle());
         review.setContent(dto.getContent());
         review.setAreaNo(dto.getAreaNo());
+        return true;
     }
 
     @Override
-    public void deleteReview(Long reviewNo) {
+    public boolean deleteReview(Long reviewNo, String idTryToDelete) {
+        String writerId = getReview(reviewNo).getId();
+
+        if(!writerId.equals(idTryToDelete)) {
+            System.out.println("[DELETE Fail] Has no Authority ");
+            return false;
+        }
+
+        fileUtil.deleteReviewImgs(getReview(reviewNo).getImageUUID());
         repository.deleteById(reviewNo);
         System.out.println(reviewNo + "번 게시글 삭제");
+        return true;
     }
 
     public Review dtoToEntity(ReviewDTO dto) {
