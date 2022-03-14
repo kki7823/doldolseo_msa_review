@@ -32,7 +32,6 @@ import java.io.InputStream;
  */
 
 @RestController
-@CrossOrigin(origins="*", allowedHeaders = "*")
 public class ReviewController {
     @Autowired
     private ReviewServiceImpl reviewService;
